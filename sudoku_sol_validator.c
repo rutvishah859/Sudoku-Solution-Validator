@@ -79,8 +79,23 @@ int main(void) {
     j++;
   }
 
-  // get puzzle solver inputs
-  // int puzzleRow; 
-  // int puzzleCol;
-  printBoard();
+  int puzzleRow; 
+  int puzzleCol;
+  
+  // until the puzzle has not been fully solved (vaid or invalid) don't break the loop
+  while (1) {
+    printBoard();
+    // get puzzle solver inputs
+    printf("Enter the row you'd like to fill: ");
+    scanf("%d", &puzzleRow);
+
+    printf("Enter the column you'd like to fill: ");
+    scanf("%d", &puzzleCol);
+
+    // position is invalid if it's already been set (position not equal to 0)
+    if (board[puzzleCol][puzzleRow] != 0) {
+      printf("Enter a position that is not already set\n");
+      continue;
+    }
+  }
 } 
