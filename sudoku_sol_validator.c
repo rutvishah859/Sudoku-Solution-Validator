@@ -2,6 +2,7 @@
 #include <stdio.h> 
 #include <pthread.h> 
 #include <semaphore.h> 
+#include <stdbool.h>
 
 /* structure for passing data to threads */ 
 typedef struct  
@@ -19,7 +20,25 @@ int validGrid[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // check each column of the sudoku board, validate of all the values in the column are unique [1, 9]
 void *checkColumn(void *param) {
-  
+	int col = *(int*)param;
+	
+	int isValid = 1;
+	
+	int cols[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	
+	for(int i = 0; i < 9; i++){
+		if(cols[board[i][col]] > 0){
+			cols[board[i][col]] += 1;
+		}
+	}
+	
+	for(int i = 0; i < 9; i++){
+		if(cols[i] > 1){
+			isValid = 0;
+			break;
+		}
+	}
+	validCol[col] = isValid;
 }
 
 // check each row of the sudoku board, validate of all the values in the row are unique [1, 9]
@@ -82,6 +101,8 @@ int main(void) {
   int puzzleRow; 
   int puzzleCol;
   
+  pthread_t colVal;
+  
   // until the puzzle has not been fully solved (vaid or invalid) don't break the loop
   while (1) {
     printBoard();
@@ -91,11 +112,18 @@ int main(void) {
 
     printf("Enter the column you'd like to fill: ");
     scanf("%d", &puzzleCol);
+    
+    
 
     // position is invalid if it's already been set (position not equal to 0)
     if (board[puzzleCol][puzzleRow] != 0) {
       printf("Enter a position that is not already set\n");
       continue;
     }
+    
+    pthread_create(&colVal, NULL, &checkColumn, &puzzleCol);
+    pthread_join(colVal, NULL);
+    
+    //printf("%d %d\n", validCol[puzzleCol], validCol[puzzleCol+1]);
   }
 } 
