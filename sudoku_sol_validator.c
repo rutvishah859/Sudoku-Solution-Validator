@@ -13,6 +13,8 @@ typedef struct parameters
 
 int board[9][9];
 
+bool valid;
+
 // if ith value is 1 then the region is valid, otherwise if 0 then it's invalid
 int validCol[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 int validRow[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -32,12 +34,12 @@ void *checkColumn(void *param) {
 	int cols[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
 	for(int i = 0; i < 9; i++){
-		if(cols[board[i][col]] > 0){
+		if(board[i][col] > 0){
 			cols[board[i][col]] += 1;
 		}
 	}
 	
-	for(int i = 0; i < 9; i++){
+	for(int i = 0; i < 10; i++){
 		if(cols[i] > 1){
 			isValid = 0;
 			break;
@@ -60,12 +62,12 @@ void *checkRow(void *param) {
 	int rows[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	
 	for(int i = 0; i < 9; i++){
-		if(rows[board[row][i]] > 0){
+		if(board[row][i] > 0){
 			rows[board[row][i]] += 1;
 		}
 	}
 	
-	for(int i = 0; i < 9; i++){
+	for(int i = 0; i < 10; i++){
 		if(rows[i] > 1){
 			isValid = 0;
 			break;
@@ -75,7 +77,61 @@ void *checkRow(void *param) {
 }
 
 // check each individual 3-by-3 grid, validate of all the values in the grid are unique [1, 9]
-void checkGrid(void *param) {
+void *checkGrid(void *param) {
+  parameters p = *(parameters*)param;
+
+  int grids[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+  int isValid = 1;
+
+
+  int box_x = p.row / 3;
+  int box_y = p.column /3;
+
+  int box_num = box_x * 3 + box_y;
+
+  for(int i = box_x * 3; i < box_x*3 + 3; i++){
+    for(int j = box_y *3; j < box_y*3 + 3; j++){
+      if (board[i][j] > 0){
+        grids[board[i][j]] += 1;
+      }
+    }
+  }
+
+  // for(int i = 0; i < 10; i++){
+  //   printf("%d ", grids[i]);
+  // }
+  // printf("\n");
+
+  // printf("yo yo %d\n", box_num);
+
+  for(int i = 0; i < 10; i++){
+
+    if(grids[i] > 1){
+      isValid = 0;
+      break;
+    }
+  }
+
+  validGrid[box_num] = isValid;
+
+}
+
+void* validate(void* param){
+  parameters p = *(parameters*)param;
+
+  int x = p.row;
+  int y = p.column;
+  int b = x + y/3;
+  
+
+  printf("%d %d %d\n", x, y, b);
+
+  if(validRow[x] == 1 && validCol[y] == 1 && validGrid[b] == 1){
+    valid = true;
+  }else{
+    valid = false;
+  }
 
 }
 
@@ -146,11 +202,11 @@ int main(void) {
   
   printBoard(board);
 
-  
-
   int x, y;
 
   find_empty(board, &x, &y);
+
+  // board[x][y] = 3;
 
   parameters p;
 
@@ -158,17 +214,39 @@ int main(void) {
 
   p.column = y;
 
-  printf("(%d, %d)\n", p.row, p.column);
+  //printf("(%d, %d)\n", p.row, p.column);
   
-  pthread_t colVal, rowVal;
+  pthread_t colVal, rowVal, gridVal, val;
     
   pthread_create(&colVal, NULL, &checkColumn, &p);
   pthread_join(colVal, NULL);
 
   pthread_create(&rowVal, NULL, &checkRow, &p);
   pthread_join(rowVal, NULL);
+
+  pthread_create(&gridVal, NULL, &checkGrid, &p);
+  pthread_join(gridVal, NULL);
     
-  printf("%d %d\n", validCol[p.column], validCol[p.column+1]);
-  printf("%d %d\n", validRow[p.row], validCol[p.row+1]);
+  pthread_create(&val, NULL, &validate, &p);
+  pthread_join(val, NULL);
+
+  // printBoard(board);
+
+  printf("%d\n", valid);
+
+  for(int i = 0; i < 9; i++){
+    printf("%d ", validCol[i]);
+  }
+  printf("\n");
+
+  for(int i = 0; i < 9; i++){
+    printf("%d ", validRow[i]);
+  }
+  printf("\n");
+
+  for(int i = 0; i < 9; i++){
+    printf("%d ", validGrid[i]);
+  }
+  printf("\n");
 }
  
