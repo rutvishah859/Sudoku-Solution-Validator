@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 /* structure for passing data to threads */ 
-typedef struct  
+typedef struct parameters 
 {  
     int row;  
     int column;  
@@ -20,7 +20,12 @@ int validGrid[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // check each column of the sudoku board, validate of all the values in the column are unique [1, 9]
 void *checkColumn(void *param) {
-	int col = *(int*)param;
+	
+  parameters p = *(parameters*)param;
+
+  int col = p.column;
+  
+  // int col = *(int*)param;
 	
 	int isValid = 1;
 	
@@ -44,7 +49,11 @@ void *checkColumn(void *param) {
 // check each row of the sudoku board, validate of all the values in the row are unique [1, 9]
 void *checkRow(void *param) {
 
-  int row = *(int*)param;
+  parameters p = *(parameters*)param;
+
+  int row = p.row;
+
+  //int row = *(int*)param;
 	
 	int isValid = 1;
 	
@@ -70,11 +79,25 @@ void checkGrid(void *param) {
 
 }
 
-// prints formatted sukoku board
-void printBoard () {
+int find_empty(int b[9][9], int* x, int* y){
+
+  for (int i = 0; i < 9; i++){
+    for(int j = 0; j < 9; j++){
+      if(b[i][j] == 0){
+        *x = i;
+        *y = j;
+
+        return 1;
+      }
+    }
+  }
+}
+
+// prints formatted sudoku board
+void printBoard(int b[9][9]) {
   for (int i = 0; i  < 9; i++) {
     for (int j = 0; j < 9; j++){
-      printf("%d ", board[i][j]);
+      printf("%d ", b[i][j]);
 
       if (j == 2 || j == 5) {
         printf("| ");
@@ -89,12 +112,7 @@ void printBoard () {
   }
 }
 
-int main(void) { 
-  // how to make param struct 
-  // parameters *data = (parameters *) malloc(sizeof(parameters));
-  // data->row = 1;
-  // data->column = 1; 
-
+void createBoard() {
   // open given arg file and read the file to extract the commands to run
 	FILE *fptr;
 	fptr = fopen("Lab3 puzzle.txt", "r");
@@ -116,18 +134,41 @@ int main(void) {
     }
     j++;
   }
+}
 
-  int puzzleRow; 
-  int puzzleCol;
+int main(void) { 
+  // how to make param struct 
+  // parameters *data = (parameters *) malloc(sizeof(parameters));
+  // data->row = 1;
+  // data->column = 1; 
+
+  createBoard();
   
-  pthread_t colVal;
+  printBoard(board);
+
   
+
+  int x, y;
+
+  find_empty(board, &x, &y);
+
+  parameters p;
+
+  p.row = x;
+
+  p.column = y;
+
+  printf("(%d, %d)\n", p.row, p.column);
   
-  
+  pthread_t colVal, rowVal;
     
-    pthread_create(&colVal, NULL, &checkColumn, &puzzleCol);
-    pthread_join(colVal, NULL);
+  pthread_create(&colVal, NULL, &checkColumn, &p);
+  pthread_join(colVal, NULL);
+
+  pthread_create(&rowVal, NULL, &checkRow, &p);
+  pthread_join(rowVal, NULL);
     
-    //printf("%d %d\n", validCol[puzzleCol], validCol[puzzleCol+1]);
-  }
-} 
+  printf("%d %d\n", validCol[p.column], validCol[p.column+1]);
+  printf("%d %d\n", validRow[p.row], validCol[p.row+1]);
+}
+ 
