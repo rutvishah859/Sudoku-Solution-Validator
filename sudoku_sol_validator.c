@@ -44,6 +44,25 @@ void *checkColumn(void *param) {
 // check each row of the sudoku board, validate of all the values in the row are unique [1, 9]
 void *checkRow(void *param) {
 
+  int row = *(int*)param;
+	
+	int isValid = 1;
+	
+	int rows[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	
+	for(int i = 0; i < 9; i++){
+		if(rows[board[row][i]] > 0){
+			rows[board[row][i]] += 1;
+		}
+	}
+	
+	for(int i = 0; i < 9; i++){
+		if(rows[i] > 1){
+			isValid = 0;
+			break;
+		}
+	}
+	validRow[row] = isValid;
 }
 
 // check each individual 3-by-3 grid, validate of all the values in the grid are unique [1, 9]
@@ -103,23 +122,8 @@ int main(void) {
   
   pthread_t colVal;
   
-  // until the puzzle has not been fully solved (vaid or invalid) don't break the loop
-  while (1) {
-    printBoard();
-    // get puzzle solver inputs
-    printf("Enter the row you'd like to fill: ");
-    scanf("%d", &puzzleRow);
-
-    printf("Enter the column you'd like to fill: ");
-    scanf("%d", &puzzleCol);
-    
-    
-
-    // position is invalid if it's already been set (position not equal to 0)
-    if (board[puzzleCol][puzzleRow] != 0) {
-      printf("Enter a position that is not already set\n");
-      continue;
-    }
+  
+  
     
     pthread_create(&colVal, NULL, &checkColumn, &puzzleCol);
     pthread_join(colVal, NULL);
