@@ -57,13 +57,14 @@ void *checkRow(void *param) {
 		}
 	}
 	
-	for(int i = 0; i < 9; i++){
+	for(int i = 0; i < 10; i++){
 		if(rows[i] > 1){
 			isValid = 0;
 			break;
 		}
 	}
 	validRow[row] = isValid;
+  pthread_exit(0);
 }
 
 // check each individual 3-by-3 grid, validate of all the values in the grid are unique [1, 9]
