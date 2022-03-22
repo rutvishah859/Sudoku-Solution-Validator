@@ -117,20 +117,34 @@ void *checkGrid(void *param) {
 
 }
 
-void* validate(void* param){
-  parameters p = *(parameters*)param;
+int validate(int b[9][9], int n, parameters p){
+  // parameters p = *(parameters*)param;
+
+  b[p.row][p.column] = n;
+
+  pthread_t row, col, grid;
 
   int x = p.row;
   int y = p.column;
-  int b = x + y/3;
+  int box = x + y/3;
+
+  pthread_create(&row, NULL, &checkRow, &p);
+  pthread_create(&col, NULL, &checkColumn, &p);
+  pthread_create(&grid, NULL, &checkRow, &p);
+
+  pthread_join(row, NULL);
+  pthread_join(col, NULL);
+  pthread_join(grid, NULL);
   
 
-  printf("%d %d %d\n", x, y, b);
+  //printf("%d %d %d\n", x, y, b);
 
-  if(validRow[x] == 1 && validCol[y] == 1 && validGrid[b] == 1){
-    valid = true;
+  if(validRow[p.row] == 1 && validCol[p.column] == 1 && validGrid[box] == 1){
+    // valid = true;
+    return 1;
   }else{
-    valid = false;
+    // valid = false;
+    return 0;
   }
 
 }
@@ -147,6 +161,8 @@ int find_empty(int b[9][9], int* x, int* y){
       }
     }
   }
+
+  return 0;
 }
 
 // prints formatted sudoku board
@@ -192,6 +208,40 @@ void createBoard() {
   }
 }
 
+int solve(int b[9][9]){
+  int x, y;
+  int find = find_empty(b, &x, &y);
+
+  parameters p;
+
+  pthread_t r, c, g, v;
+
+  if(find == 0){
+    return 1;
+  }else{
+    p.row = x;
+    p.column = y;
+  }
+
+  for(int i = 1; i < 10; i++){
+    
+    if(validate(b, i, p)){
+
+      // b[x][y] = i;
+
+      if(solve(b)){
+        return 1;
+      }
+
+      b[x][y] = 0;
+    }
+    
+  }
+
+  return 0;
+
+}
+
 int main(void) { 
   // how to make param struct 
   // parameters *data = (parameters *) malloc(sizeof(parameters));
@@ -202,51 +252,57 @@ int main(void) {
   
   printBoard(board);
 
-  int x, y;
+  solve(board);
 
-  find_empty(board, &x, &y);
+  printf("\n_____________________________\n");
+
+  printBoard(board);
+
+  // int x, y;
+
+  // find_empty(board, &x, &y);
 
   // board[x][y] = 3;
 
-  parameters p;
+  // parameters p;
 
-  p.row = x;
+  // p.row = x;
 
-  p.column = y;
+  // p.column = y;
 
   //printf("(%d, %d)\n", p.row, p.column);
   
-  pthread_t colVal, rowVal, gridVal, val;
+  // pthread_t colVal, rowVal, gridVal, val;
     
-  pthread_create(&colVal, NULL, &checkColumn, &p);
-  pthread_join(colVal, NULL);
+  // pthread_create(&colVal, NULL, &checkColumn, &p);
+  // pthread_join(colVal, NULL);
 
-  pthread_create(&rowVal, NULL, &checkRow, &p);
-  pthread_join(rowVal, NULL);
+  // pthread_create(&rowVal, NULL, &checkRow, &p);
+  // pthread_join(rowVal, NULL);
 
-  pthread_create(&gridVal, NULL, &checkGrid, &p);
-  pthread_join(gridVal, NULL);
+  // pthread_create(&gridVal, NULL, &checkGrid, &p);
+  // pthread_join(gridVal, NULL);
     
-  pthread_create(&val, NULL, &validate, &p);
-  pthread_join(val, NULL);
+  // pthread_create(&val, NULL, &validate, &p);
+  // pthread_join(val, NULL);
 
   // printBoard(board);
 
-  printf("%d\n", valid);
+  // printf("%d\n", valid);
 
-  for(int i = 0; i < 9; i++){
-    printf("%d ", validCol[i]);
-  }
-  printf("\n");
+  // for(int i = 0; i < 9; i++){
+  //   printf("%d ", validCol[i]);
+  // }
+  // printf("\n");
 
-  for(int i = 0; i < 9; i++){
-    printf("%d ", validRow[i]);
-  }
-  printf("\n");
+  // for(int i = 0; i < 9; i++){
+  //   printf("%d ", validRow[i]);
+  // }
+  // printf("\n");
 
-  for(int i = 0; i < 9; i++){
-    printf("%d ", validGrid[i]);
-  }
-  printf("\n");
+  // for(int i = 0; i < 9; i++){
+  //   printf("%d ", validGrid[i]);
+  // }
+  // printf("\n");
 }
  
