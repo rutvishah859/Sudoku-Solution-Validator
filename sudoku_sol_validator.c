@@ -109,6 +109,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+//function to create a 9x9 2-D array to represent the sudoku board
 void createBoard() {
   // open given arg file and read the file to extract the commands to run
 	FILE *fptr;
@@ -120,7 +121,7 @@ void createBoard() {
     exit(0);
 	}
 
-  // make a 9x9 sudoku array from the Lab3 puzzle.txt file
+  // make a 9x9 2-D sudoku array from the Lab3 puzzle.txt file
   int i = 0;
   int j = 0;
   while (fscanf(fptr, "%d", &board[i][j]) == 1){
@@ -133,6 +134,8 @@ void createBoard() {
   }
 }
 
+
+//function to iterate through each element of the 2-D sudoku array and print it out with some formatting 
 void printBoard(int b[9][9]) {
   // prints the solution board with sub-grid separators
   for (int i = 0; i  < 9; i++) {
@@ -150,32 +153,39 @@ void printBoard(int b[9][9]) {
   }
 }
 
+//function to check if a given number 'n' exists in the column in which it was placed
 int sameCol(int x, int y, int n){
-  // checks if n already exists in the same column
+  //iterate through the column specified by 'x'
+  //if 'n' exists in the same column, return 1
   for(int i = 0; i < 9; i++){
     if(board[x][i] == n){
         return 1;
     }
   }
 
+  //The number 'n' was not found anywhere else in the column (i.e. it is valid to put this 'n' in this column)
   return 0;
 }
 
+//function to check if a given number 'n' exists in the row in which it was placed
 int sameRow(int x, int y, int n){
-  // checks if n already exists in same row
+  //iterate through the row specified by 'y'
+  //if 'n' exists in the same row, return 1
   for(int i = 0; i < 9; i++){
     if(board[i][y] == n){
         return 1;
     }
   }
 
+  //The number 'n' was not found anywhere else in the row (i.e. it is valid to put this 'n' in this row)
   return 0;
 }
 
+//function to check if a given number 'n' exists in the 3x3 sub-grid in which it was placed
 int sameGrid(int x, int y, int n){
   // checks if n already exists in the sub-grid
 
-  // initializes row indexes to their corresponding sub-grid
+  // initializes row index to its corresponding sub-grid
   if(x < 3){
     x = 0;
   }else if(x < 6){
@@ -184,7 +194,7 @@ int sameGrid(int x, int y, int n){
     x = 6;
   }
 
-  // initializes column indexes to their corresponding sub-grid
+  // initializes column index to its corresponding sub-grid
   if(y < 3){
     y = 0;
   }else if(y < 6){
@@ -193,6 +203,8 @@ int sameGrid(int x, int y, int n){
     y = 6;
   }
 
+  //iterate through the elements in the sub-grid specified by the indices chosen above
+  //return 1 if 'n' exists in that sub-grid
   for(int i = x; i < x+3; i++){
     for(int j = y; j < y+3; j++){
 
@@ -203,50 +215,62 @@ int sameGrid(int x, int y, int n){
     }
   }
 
+  //The number 'n' was not found anywhere else in the sub-grid (i.e. it is valid to put this 'n' in this sub-grid)
   return 0;
 }
 
+//function to solve the sudoku board recursively using a backtracking algorithm
 int solveSu(int x, int y){
-    // solves the sudoku board
-    int n = 1;
+    int n = 1; //the number to be placed into the sudoku board to attempt to solve it
 
+    //temporary row and column variables
     int tx = 0;
     int ty = 0;
 
-    if(board[x][y] != 0){
+    
+    if(board[x][y] != 0){ //if the current x-y position in the 2-D sudoku array is not a valid position to place a "guess"
         
+        //to wrap the row/column variables around
         if(x == 8 && y == 8){
             return 1;
         }
 
+
         if(x < 8){
-            x++;
+            x++; //increment column number if it is less than 8
         }else{
             if(y < 8){
-                x = 0;
-                y++;
+                x = 0; //go to the beginning of the row (i.e. 0'th column)
+                y++;  //increment the row number if it is less than 8
             }
         }
 
-        if(solveSu(x, y)){
-            return 1;
+        if(solveSu(x, y)){ //recursively call the solver function with the new row-column indices
+            return 1; //return 1 (true) if the solution can be reached with previous function call
         }else{
-            return 0;
+            return 0; //return 0 (false) if solution cannot be reached with previous function call
         }
     }
 
-    if(board[x][y] == 0){
-        while(n < 10){
-            // if n isn't in same row, column or sub grid then place on board
+    if(board[x][y] == 0){ //if the current x-y position in the 2-D sudoku array is a valid position to place a "guess"
+        
+        while(n < 10){ //loop for values of 'n' between 1-9 (inclusive)
+            // if n isn't in same row, column or sub grid 
             if(!sameRow(x, y, n) && !sameCol(x, y, n) && !sameGrid(x, y, n)){
                 
+                //then place it on the board at row-x, column-y
                 board[x][y] = n;
 
+                //same wrapping as above
                 if(x == 8 && y == 8){
-                    
                     return 1;
                 }
 
+                //initialize a the temporary row-column variables and continue
+                //these temporary positions are needed because it is not yet guaranteed that the 'n' placed
+                //on the board at the previous step is correct to the solution of the board.
+                //Using temporary position allows for backtracking without explicitly saving the original indices
+                //in a data-structure (such as a stack)
                 if(x < 8){
                     tx = x+1;
                 }else{
@@ -256,14 +280,22 @@ int solveSu(int x, int y){
                     }
                 }
 
+                //recursively call the solver function; this time with the temporary indices
+                //if the solver returns true, return 1 from this if-else block
                 if(solveSu(tx, ty)){
                     return 1;
                 }
             }
-            n++;
+            n++; //increment n
+          
         }
 
+        //this area is only reached when backtracking is needed (i.e. if the numbers placed on the board above do not
+        //lead to a solution).
+        //In this can, replace the position at x-y with a 0 again (to reset it)
         board[x][y] = 0;
+
+        //return 0 (false) if the solution is not being reached (this is used by the recursive function calls above) 
         return 0;
     }
 }
