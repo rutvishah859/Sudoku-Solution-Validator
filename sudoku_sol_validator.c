@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     pthread_t col_tids[9];
     pthread_t grid_tids[9];
 
-    // test to break program
+    // test invalid board
     // board[3][5] = 6;
 
     // creates 9 threads to check that each row and column contains digits 1-9
