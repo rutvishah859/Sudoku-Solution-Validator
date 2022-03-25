@@ -270,7 +270,7 @@ int solveSu(int x, int y){
                 //these temporary positions are needed because it is not yet guaranteed that the 'n' placed
                 //on the board at the previous step is correct to the solution of the board.
                 //Using temporary position allows for backtracking without explicitly saving the original indices
-                //in a data-structure (such as a stack)
+                //in a data-structure (such as a stack).
                 if(x < 8){
                     tx = x+1;
                 }else{
