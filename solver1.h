@@ -11,3 +11,7 @@ int sameRow(int, int, int);
 int sameGrid(int, int, int);
 
 int solveSu(int, int);
+
+void *checkColumn(void *param); 
+void *checkRow(void *param);
+void *checkGrid(void *param); 
